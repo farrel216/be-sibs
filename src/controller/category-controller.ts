@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CreateCategoryRequest, UpdateCategoryRequest } from "../model/category-model";
+import { CreateCategoryRequest, SearchCategoryRequest, UpdateCategoryRequest } from "../model/category-model";
 import { CategoryService } from "../service/category-service";
 
 export class CategoryController {
@@ -19,20 +19,6 @@ export class CategoryController {
         }
     }
 
-    static async getAll(req: Request, res: Response, next: NextFunction) {
-        try {
-            const response = await CategoryService.getAll();
-            res.status(200).json({
-                statusCode: 200,
-                success: true,
-                message: "Retrieve all categories successfully",
-                data: response
-            });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
     static async getById(req: Request, res: Response, next: NextFunction) {
         try {
             const categoryId = req.params.categoryId;
@@ -75,6 +61,26 @@ export class CategoryController {
                 success: true,
                 message: "Delete category successfully",
                 data: "ok"
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
+    static async search(req: Request, res: Response, next: NextFunction) {
+        try {
+            const request: SearchCategoryRequest = {
+                name: req.query.name as string,
+                page: req.query.page ? Number(req.query.page) : 1,
+                size: req.query.size ? Number(req.query.size) : 10
+            };
+            const response = await CategoryService.search(request);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Search category successfully",
+                data: response
             });
         }
         catch (error) {

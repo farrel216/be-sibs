@@ -1,9 +1,10 @@
 import { Category } from "@prisma/client";
 import prismaClient from "../application/database";
 import { ResponseError } from "../error/response-error";
-import { CategoryResponse, UpdateCategoryRequest, toCategoryResponse, CreateCategoryRequest } from "../model/category-model";
+import { CategoryResponse, UpdateCategoryRequest, toCategoryResponse, CreateCategoryRequest, SearchCategoryRequest } from "../model/category-model";
 import { CategoryValidation } from "../validation/category-validation";
 import { Validation } from "../validation/validation";
+import { Pageable } from "../model/page";
 
 export class CategoryService {
     static async create(request: CreateCategoryRequest): Promise<CategoryResponse> {
@@ -24,12 +25,6 @@ export class CategoryService {
         });
         return toCategoryResponse(category);
     }
-
-    static async getAll(): Promise<CategoryResponse[]> {
-        const categories = await prismaClient.category.findMany();
-        return categories.map(category => toCategoryResponse(category));
-    }
-
 
     static async checkCategoryExist(categoryId: string): Promise<Category> {
         const category = await prismaClient.category.findUnique({
@@ -71,4 +66,36 @@ export class CategoryService {
         return toCategoryResponse(category);
     }
 
+    static async search(request: SearchCategoryRequest): Promise<Pageable<CategoryResponse>> {
+        const searchRequest = Validation.validate(CategoryValidation.SEARCH, request);
+
+        const categories = await prismaClient.category.findMany({
+            where: {
+                name: {
+                    contains: searchRequest.name,
+                    mode: "insensitive"
+                }
+            },
+            skip: (searchRequest.page - 1) * searchRequest.size,
+            take: searchRequest.size
+        });
+
+        const total = await prismaClient.category.count({
+            where: {
+                name: {
+                    contains: searchRequest.name
+                }
+            }
+        });
+
+        const data = categories.map(category => toCategoryResponse(category));
+        return {
+            data,
+            paging: {
+                currentPage: searchRequest.page,
+                totalPage: Math.ceil(total / searchRequest.size),
+                size: searchRequest.size
+            }
+        }
+    }
 }

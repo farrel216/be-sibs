@@ -8,4 +8,9 @@ export class CategoryValidation {
         categoryId: z.string().uuid(),
         name: z.string().min(1).max(50)
     })
+    static readonly SEARCH: ZodType = z.object({
+        name: z.string().max(50).optional(),
+        page: z.number().min(1).positive(),
+        size: z.number().min(1).max(100).positive()
+    })
 }
