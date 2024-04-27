@@ -14,3 +14,6 @@ apiRouter.delete("/api/users/current", UserController.logout)
 // Category API
 apiRouter.get("/api/categories", CategoryController.getAll)
 apiRouter.post("/api/categories", CategoryController.create)
+apiRouter.get("/api/categories/:categoryId", CategoryController.getById)
+apiRouter.patch("/api/categories/:categoryId", CategoryController.update)
+apiRouter.delete("/api/categories/:categoryId", CategoryController.delete)

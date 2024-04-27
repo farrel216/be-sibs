@@ -1,6 +1,7 @@
+import { Category } from "@prisma/client";
 import prismaClient from "../application/database";
 import { ResponseError } from "../error/response-error";
-import { CategoryResponse, CreateCategoryRequest, toCategoryResponse } from "../model/category-model";
+import { CategoryResponse, UpdateCategoryRequest, toCategoryResponse, CreateCategoryRequest } from "../model/category-model";
 import { CategoryValidation } from "../validation/category-validation";
 import { Validation } from "../validation/validation";
 
@@ -19,9 +20,7 @@ export class CategoryService {
         }
 
         const category = await prismaClient.category.create({
-            data: {
-                name: categoryRequest.name
-            }
+            data: categoryRequest
         });
         return toCategoryResponse(category);
     }
@@ -29,6 +28,47 @@ export class CategoryService {
     static async getAll(): Promise<CategoryResponse[]> {
         const categories = await prismaClient.category.findMany();
         return categories.map(category => toCategoryResponse(category));
+    }
+
+
+    static async checkCategoryExist(categoryId: string): Promise<Category> {
+        const category = await prismaClient.category.findUnique({
+            where: {
+                categoryId
+            }
+        });
+        if (!category) {
+            throw new ResponseError(404, "Category not found");
+        }
+        return category;;
+    }
+
+    static async getById(categoryId: string): Promise<CategoryResponse> {
+        const category = await this.checkCategoryExist(categoryId);
+        return toCategoryResponse(category);
+    }
+
+    static async update(request: UpdateCategoryRequest): Promise<CategoryResponse> {
+        const categoryRequest = Validation.validate(CategoryValidation.UPDATE, request);
+        await this.checkCategoryExist(categoryRequest.categoryId);
+        const category = await prismaClient.category.update({
+            where: {
+                categoryId: categoryRequest.categoryId
+            },
+            data: categoryRequest
+        });
+        return toCategoryResponse(category);
+    }
+
+    static async delete(categoryId: string): Promise<CategoryResponse> {
+        await this.checkCategoryExist(categoryId);
+        const category = await prismaClient.category.delete({
+            where: {
+                categoryId
+            }
+        });
+
+        return toCategoryResponse(category);
     }
 
 }
