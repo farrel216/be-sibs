@@ -23,6 +23,14 @@ export type CreateProductRequest = {
     categoryId: string;
 }
 
+export type UpdateProductRequest = {
+    productId: string;
+    name: string;
+    buyPrice: number;
+    sellPrice: number;
+    categoryId: string;
+}
+
 export type SearchProductRequest = {
     name?: string;
     categoryId?: string;

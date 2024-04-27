@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CreateProductRequest, SearchProductRequest } from "../model/product-model";
+import { CreateProductRequest, SearchProductRequest, UpdateProductRequest } from "../model/product-model";
 import { ProductService } from "../service/product-service";
 
 export class ProductController {
@@ -35,6 +35,37 @@ export class ProductController {
             });
         }
         catch (error) {
+            next(error);
+        }
+    }
+
+    static async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const request: UpdateProductRequest = req.body as UpdateProductRequest;
+            request.productId = req.params.productId;
+            const response = await ProductService.update(request);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Update product successfully",
+                data: response
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const productId = req.params.productId;
+            await ProductService.delete(productId);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Delete product successfully",
+                data: "ok"
+            });
+        } catch (error) {
             next(error);
         }
     }

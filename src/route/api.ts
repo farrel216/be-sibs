@@ -22,3 +22,5 @@ apiRouter.delete("/api/categories/:categoryId", CategoryController.delete)
 // Product API
 apiRouter.get("/api/products", ProductController.search)
 apiRouter.post("/api/products", ProductController.create)
+apiRouter.put("/api/products/:productId", ProductController.update)
+apiRouter.delete("/api/products/:productId", ProductController.delete)
