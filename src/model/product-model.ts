@@ -1,5 +1,15 @@
+import { Category, Product } from "@prisma/client";
+
+export type ProductModel = {
+    productId: string;
+    name: string;
+    buyPrice: number;
+    sellPrice: number;
+    category: Category;
+}
+
 export type ProductResponse = {
-    id: number;
+    productId: string;
     name: string;
     buyPrice: number;
     sellPrice: number;
@@ -10,5 +20,22 @@ export type CreateProductRequest = {
     name: string;
     buyPrice: number;
     sellPrice: number;
-    categoryId: number;
+    categoryId: string;
+}
+
+export type SearchProductRequest = {
+    name?: string;
+    categoryId?: string;
+    page: number;
+    size: number;
+}
+
+export function toProductResponse(product: ProductModel): ProductResponse {
+    return {
+        productId: product.productId,
+        name: product.name,
+        buyPrice: product.buyPrice,
+        sellPrice: product.sellPrice,
+        category: product.category.name
+    }
 }

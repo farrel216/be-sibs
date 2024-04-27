@@ -57,6 +57,14 @@ export class CategoryService {
 
     static async delete(categoryId: string): Promise<CategoryResponse> {
         await this.checkCategoryExist(categoryId);
+        const dependentProduct = await prismaClient.product.count({
+            where: {
+                categoryId
+            }
+        })
+        if (dependentProduct > 0) {
+            throw new ResponseError(400, "Category has dependent product");
+        }
         const category = await prismaClient.category.delete({
             where: {
                 categoryId
@@ -75,6 +83,9 @@ export class CategoryService {
                     contains: searchRequest.name,
                     mode: "insensitive"
                 }
+            },
+            orderBy: {
+                name: "asc",
             },
             skip: (searchRequest.page - 1) * searchRequest.size,
             take: searchRequest.size

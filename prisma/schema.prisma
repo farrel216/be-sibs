@@ -40,8 +40,8 @@ model Product {
   name       String    @unique
   buyPrice   Int
   sellPrice  Int
-  category   Category? @relation(fields: [categoryId], references: [categoryId], onDelete: Restrict)
-  categoryId String?
+  category   Category @relation(fields: [categoryId], references: [categoryId], onDelete: Restrict)
+  categoryId String
 
   @@map("products")
 }
