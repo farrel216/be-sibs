@@ -21,6 +21,8 @@ model User {
   name String
   balance Int @default(0)
 
+  transactions Transaction[]
+
   token    String?
 
   @@map("users")
@@ -44,6 +46,29 @@ model Product {
   categoryId String
 
   @@map("products")
+}
+
+model Transaction {
+  transactionId String @id @default(uuid())
+  status  String
+  date    DateTime
+  user    User @relation(fields: [userId], references: [userId])
+  userId  String
+
+  transactionItem TransactionItem[]
+
+  @@map("transations")
+}
+
+model TransactionItem {
+  transactionItemId String @id @default(uuid())
+  transactionId String
+  productId String
+  quantity Int
+  itemBuyPrice Int
+
+  transaction Transaction @relation(fields: [transactionId], references: [transactionId])
+  @@map("transactionItems")
 }
 
 enum Role {
