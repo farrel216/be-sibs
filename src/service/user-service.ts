@@ -74,8 +74,6 @@ export class UserService {
 
     static async update(user: User, request: UpdateUserRequest): Promise<UserResponse> {
         const updateRequest = Validation.validate(UserValidation.UPDATE, request);
-        console.log(updateRequest)
-        console.log(user)
         if (updateRequest.name) {
             user.name = updateRequest.name;
         }
@@ -92,8 +90,6 @@ export class UserService {
                 password: user.password
             }
         })
-
-        console.log(result)
 
         return toUserResponse(result)
     }
