@@ -4,10 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
-    "test": "jest",
-    "dev": "nodemon --exec ts-node src/main.ts"
+    "start": "NODE_PATH=./build node build/main.js",
+    "build": "tsc -p .",
+    "dev": "nodemon src/main.ts"
   },
   "jest": {
     "transform": {

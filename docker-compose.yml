@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./src:/home/node/app/src
+      - ./nodemon.json:/home/node/app/nodemon.json
+    container_name: be-sibs
+    environment:
+      DATABASE_URL: 'postgresql://postgres:postgres@host.docker.internal:5432/sibs?schema=public'
+      JWT_SECRET: 'HCI2NCE89u89n892ncu89Y2Nc7y27IN89cejwiokq0M9C2O1'
+    expose:
+      - '4000'
+    ports:
+      - '4000:4000'
+    command: npm run dev

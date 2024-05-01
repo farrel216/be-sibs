@@ -30,17 +30,17 @@ export const prismaClient = new PrismaClient({
     ]
 })
 
-prismaClient.$on("error", e => {
-    logger.error(e)
-})
-prismaClient.$on("warn", e => {
-    logger.warn(e)
-})
-prismaClient.$on("info", e => {
-    logger.info(e)
-})
-prismaClient.$on("query", e => {
-    logger.info(e)
-})
+// prismaClient.$on("error", e => {
+//     logger.error(e)
+// })
+// prismaClient.$on("warn", e => {
+//     logger.warn(e)
+// })
+// prismaClient.$on("info", e => {
+//     logger.info(e)
+// })
+// prismaClient.$on("query", e => {
+//     logger.info(e)
+// })
 
 export default prismaClient
