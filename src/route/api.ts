@@ -3,6 +3,7 @@ import { authMiddleware } from '../middleware/auth-middleware';
 import { UserController } from '../controller/user-controller';
 import { CategoryController } from '../controller/category-controller';
 import { ProductController } from '../controller/product-controller';
+import { TransactionController } from '../controller/transaction-controller';
 
 export const apiRouter = express.Router();
 apiRouter.use(authMiddleware);
@@ -18,5 +19,8 @@ apiRouter.get("/api/categories/:categoryId", CategoryController.getById)
 
 // Product API
 apiRouter.get("/api/products", ProductController.search)
+
+// Transaction API
+apiRouter.get("/api/transactions", TransactionController.getCurrentUserTransaction)
 
 

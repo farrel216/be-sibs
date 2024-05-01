@@ -59,6 +59,35 @@ export class TransactionService {
         return toTransactionResponse(transaction)
     }
 
+    static async getTransactionByUserId(userId: string): Promise<TransactionResponse[]> {
+        const transactions = await prismaClient.transaction.findMany({
+            where: {
+                userId
+            },
+            include: {
+                transactionItem: true
+            }
+        })
+        return transactions.map(transaction => toTransactionResponse(transaction))
+    }
+
+    static async getTransactionById(transactionId: string): Promise<TransactionResponse> {
+        const transaction = await prismaClient.transaction.findUnique({
+            where: {
+                transactionId
+            },
+            include: {
+                transactionItem: true
+            }
+        })
+
+        if (!transaction) {
+            throw new ResponseError(404, "Transaction not found")
+        }
+
+        return toTransactionResponse(transaction)
+    }
+
     static async delete(transactionId: string) {
         const transaction = await prismaClient.transaction.findUnique({
             where: {

@@ -21,3 +21,5 @@ adminRouter.delete("/api/products/:productId", ProductController.delete)
 // Transaction API
 adminRouter.post("/api/transactions/:userId", TransactionController.create)
 adminRouter.delete("/api/transactions/:transactionId", TransactionController.delete)
+adminRouter.get("/api/transactions/:transactionId", TransactionController.getTransactionById)
+adminRouter.get("/api/transactions/user/:userId", TransactionController.getTransactionByUserId)
