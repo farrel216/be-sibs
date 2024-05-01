@@ -1,14 +1,14 @@
 import { Transaction } from "@prisma/client";
 
 export type TransactionItemModel = {
-    productId: string;
-    quantity: number;
-    itemBuyPrice: number;
+    productName: string;
+    weight: number;
+    rate: number;
+    total: number;
 }
 
 export type TransactionModel = {
     transactionId: string;
-    status: string;
     date: Date;
     userId: string;
     transactionItem: TransactionItemModel[];
@@ -16,27 +16,28 @@ export type TransactionModel = {
 
 export type TransactionResponse = {
     transactionId: string;
-    status: string;
     date: Date;
     userId: string;
-    transactionItems: TransactionItemModel[];
+    transactionItem: TransactionItemModel[];
 }
 
 export type CreateTransactionRequest = {
     userId: string;
-    transactionItems: TransactionItemModel[];
+    transactionItems: [
+        { productId: string, weight: number }
+    ];
 }
 
 export function toTransactionResponse(transaction: TransactionModel): TransactionResponse {
     return {
         transactionId: transaction.transactionId,
-        status: transaction.status,
         date: transaction.date,
         userId: transaction.userId,
-        transactionItems: transaction.transactionItem.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            itemBuyPrice: item.itemBuyPrice
+        transactionItem: transaction.transactionItem.map(item => ({
+            productName: item.productName,
+            weight: item.weight,
+            rate: item.rate,
+            total: item.total
         }))
     }
 }

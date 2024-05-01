@@ -1,3 +1,4 @@
+import { Product } from "@prisma/client";
 import prismaClient from "../application/database";
 import { ResponseError } from "../error/response-error";
 import { Pageable } from "../model/page";
@@ -7,15 +8,22 @@ import { Validation } from "../validation/validation";
 import { CategoryService } from "./category-service";
 
 export class ProductService {
-    static async create(request: CreateProductRequest): Promise<ProductResponse> {
-        const createRequest = Validation.validate(ProductValidation.CREATE, request);
+
+    static async checkProductNotExist(name: string): Promise<boolean> {
         const uniqueProduct = await prismaClient.product.count({
             where: {
-                name: createRequest.name
+                name
             }
         })
+        return uniqueProduct == 0;
+    }
 
-        if (uniqueProduct > 0) {
+
+    static async create(request: CreateProductRequest): Promise<ProductResponse> {
+        const createRequest = Validation.validate(ProductValidation.CREATE, request);
+        const uniqueProduct = await this.checkProductNotExist(createRequest.name);
+
+        if (!uniqueProduct) {
             throw new ResponseError(400, "Product already exists");
         }
 
@@ -69,7 +77,7 @@ export class ProductService {
         }
     }
 
-    static async checkProductExist(productId: string) {
+    static async checkProductExist(productId: string): Promise<Product> {
         const product = await prismaClient.product.findUnique({
             where: {
                 productId
@@ -86,6 +94,7 @@ export class ProductService {
     static async update(request: UpdateProductRequest): Promise<ProductResponse> {
         const updateRequest = Validation.validate(ProductValidation.UPDATE, request);
         await this.checkProductExist(updateRequest.productId);
+
         await CategoryService.checkCategoryExist(updateRequest.categoryId);
 
         const product = await prismaClient.product.update({

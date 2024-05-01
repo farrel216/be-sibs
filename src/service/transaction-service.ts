@@ -2,23 +2,38 @@ import { CreateTransactionRequest, toTransactionResponse, TransactionResponse } 
 import { TransactionValidation } from "../validation/transaction-validation";
 import { Validation } from "../validation/validation";
 import prismaClient from "../application/database";
+import { ResponseError } from "../error/response-error";
+import { Transaction } from "@prisma/client";
 
 export class TransactionService {
     static async create(request: CreateTransactionRequest): Promise<TransactionResponse> {
         const transactionRequest = Validation.validate(TransactionValidation.CREATE, request);
 
+        const itemName = await Promise.all(transactionRequest.transactionItems.map(async item => {
+            const product = await prismaClient.product.findUnique({
+                where: {
+                    productId: item.productId
+                }
+            })
+            if (!product) {
+                throw new ResponseError(404, `Product with ID ${item.productId} not found`)
+            }
+            return { ...item, productName: product.name, rate: product.buyPrice }
+        }))
+
         const transaction = await prismaClient.$transaction(async (tx) => {
             const transactionProcess = await tx.transaction.create({
                 data: {
                     userId: transactionRequest.userId,
-                    status: "success",
                     date: new Date(),
                     transactionItem: {
                         createMany: {
-                            data: transactionRequest.transactionItems.map(item => ({
+                            data: itemName.map(item => ({
                                 productId: item.productId,
-                                quantity: item.quantity,
-                                itemBuyPrice: item.itemBuyPrice
+                                productName: item.productName,
+                                weight: item.weight,
+                                rate: item.rate,
+                                total: item.weight * item.rate
                             }))
                         }
                     }
@@ -26,19 +41,62 @@ export class TransactionService {
                 include: {
                     transactionItem: true
                 }
-            });
-            await tx.user.update({
+            })
+
+
+            await tx.balance.update({
                 where: {
                     userId: transactionRequest.userId
                 },
                 data: {
                     balance: {
-                        increment: transactionRequest.transactionItems.reduce((total, item) => total + item.quantity * item.itemBuyPrice, 0)
+                        increment: transactionProcess.transactionItem.reduce((acc, item) => acc + item.total, 0)
                     }
                 }
             })
             return transactionProcess;
         })
-        return toTransactionResponse(transaction);
+        return toTransactionResponse(transaction)
+    }
+
+    static async delete(transactionId: string) {
+        const transaction = await prismaClient.transaction.findUnique({
+            where: {
+                transactionId
+            },
+            include: {
+                transactionItem: true
+            }
+        })
+
+        if (!transaction) {
+            throw new ResponseError(404, "Transaction not found")
+        }
+
+        await prismaClient.$transaction(async (tx) => {
+            await tx.transactionItem.deleteMany({
+                where: {
+                    transactionId
+                }
+            })
+
+            await tx.balance.update({
+                where: {
+                    userId: transaction.userId
+                },
+                data: {
+                    balance: {
+                        decrement: transaction.transactionItem.reduce((acc, item) => acc + item.total, 0)
+                    }
+                }
+            })
+
+            await tx.transaction.delete({
+                where: {
+                    transactionId
+                }
+            })
+        })
+        return transaction
     }
 }

@@ -10,6 +10,9 @@ export const adminMiddleware = async (req: UserRequest, res: Response, next: Nex
         const user = await prismaClient.user.findFirst({
             where: {
                 token: token
+            },
+            include: {
+                balance: true
             }
         })
         if (user && user.role === 'admin') {

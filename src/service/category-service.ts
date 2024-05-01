@@ -7,23 +7,14 @@ import { Validation } from "../validation/validation";
 import { Pageable } from "../model/page";
 
 export class CategoryService {
-    static async create(request: CreateCategoryRequest): Promise<CategoryResponse> {
-        const categoryRequest = Validation.validate(CategoryValidation.CREATE, request);
 
+    static async checkCategoryNotExist(name: string): Promise<boolean> {
         const uniqueCategory = await prismaClient.category.count({
             where: {
-                name: categoryRequest.name
+                name
             }
         })
-
-        if (uniqueCategory > 0) {
-            throw new ResponseError(400, "Category already exists");
-        }
-
-        const category = await prismaClient.category.create({
-            data: categoryRequest
-        });
-        return toCategoryResponse(category);
+        return uniqueCategory == 0;
     }
 
     static async checkCategoryExist(categoryId: string): Promise<Category> {
@@ -38,6 +29,23 @@ export class CategoryService {
         return category;;
     }
 
+    static async create(request: CreateCategoryRequest): Promise<CategoryResponse> {
+        const categoryRequest = Validation.validate(CategoryValidation.CREATE, request);
+
+        const uniqueCategory = await this.checkCategoryNotExist(categoryRequest.name);
+
+        if (!uniqueCategory) {
+            throw new ResponseError(400, "Category already exists");
+        }
+
+        const category = await prismaClient.category.create({
+            data: categoryRequest
+        });
+
+        return toCategoryResponse(category);
+    }
+
+
     static async getById(categoryId: string): Promise<CategoryResponse> {
         const category = await this.checkCategoryExist(categoryId);
         return toCategoryResponse(category);
@@ -46,6 +54,12 @@ export class CategoryService {
     static async update(request: UpdateCategoryRequest): Promise<CategoryResponse> {
         const categoryRequest = Validation.validate(CategoryValidation.UPDATE, request);
         await this.checkCategoryExist(categoryRequest.categoryId);
+        const uniqueCategory = await this.checkCategoryNotExist(categoryRequest.name);
+
+        if (!uniqueCategory) {
+            throw new ResponseError(400, "Category already exists");
+        }
+
         const category = await prismaClient.category.update({
             where: {
                 categoryId: categoryRequest.categoryId

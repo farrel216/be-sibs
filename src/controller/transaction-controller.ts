@@ -21,4 +21,19 @@ export class TransactionController {
             next(error);
         }
     }
+
+    static async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const transactionId = req.params.transactionId;
+            await TransactionService.delete(transactionId);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Transaction deleted successfully"
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
 }

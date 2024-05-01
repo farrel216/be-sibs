@@ -13,7 +13,7 @@ export type ProductResponse = {
     name: string;
     buyPrice: number;
     sellPrice: number;
-    category: string;
+    category: Category;
 }
 
 export type CreateProductRequest = {
@@ -44,6 +44,6 @@ export function toProductResponse(product: ProductModel): ProductResponse {
         name: product.name,
         buyPrice: product.buyPrice,
         sellPrice: product.sellPrice,
-        category: product.category.name
+        category: product.category
     }
 }

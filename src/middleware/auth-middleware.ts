@@ -10,6 +10,9 @@ export const authMiddleware = async (req: UserRequest, res: Response, next: Next
         const user = await prismaClient.user.findFirst({
             where: {
                 token: token
+            },
+            include: {
+                balance: true
             }
         })
         if (user) {

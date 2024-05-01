@@ -1,7 +1,7 @@
 import { User } from "@prisma/client";
 import prismaClient from "../application/database";
 import { ResponseError } from "../error/response-error";
-import { CreateUserRequest, LoginUserRequest, toUserResponse, UpdateUserRequest, UserResponse } from "../model/user-model";
+import { AccountModel, AccountResponse, CreateUserRequest, LoginUserRequest, toAccountResponse, toUserResponse, UpdateUserRequest, UserResponse } from "../model/user-model";
 import { UserValidation } from "../validation/user-validation";
 import { Validation } from "../validation/validation";
 import bcrypt from "bcrypt";
@@ -22,10 +22,12 @@ export class UserService {
         }
 
         registerRequest.password = await bcrypt.hash(registerRequest.password, 10)
-        const user = await prismaClient.user.create({
-            data: registerRequest
+        let user = await prismaClient.user.create({
+            data: {
+                ...registerRequest,
+                balance: { create: { balance: 0 } }
+            }
         })
-
         return toUserResponse(user)
     }
 
@@ -48,7 +50,8 @@ export class UserService {
             throw new ResponseError(400, "Username or password is incorrect")
         }
 
-        const token = jwt.sign({ userId: user.userId, role: user.role }, "rahasia", { expiresIn: '1h' })
+        const jwtSecret = process.env.JWT_SECRET || "secret"
+        const token = jwt.sign({ userId: user.userId, role: user.role }, jwtSecret, { expiresIn: '1d' })
 
         user = await prismaClient.user.update({
             where: {
@@ -65,29 +68,32 @@ export class UserService {
         return response
     }
 
-    static async get(user: User): Promise<UserResponse> {
-        return toUserResponse(user)
+    static async get(user: AccountModel): Promise<AccountResponse> {
+        return toAccountResponse(user)
     }
 
     static async update(user: User, request: UpdateUserRequest): Promise<UserResponse> {
         const updateRequest = Validation.validate(UserValidation.UPDATE, request);
-
+        console.log(updateRequest)
+        console.log(user)
         if (updateRequest.name) {
             user.name = updateRequest.name;
         }
         if (updateRequest.password) {
             user.password = await bcrypt.hash(updateRequest.password, 10);
         }
-        if (updateRequest.role) {
-            user.role = updateRequest.role;
-        }
 
         const result = await prismaClient.user.update({
             where: {
                 userId: user.userId
             },
-            data: user
+            data: {
+                name: user.name,
+                password: user.password
+            }
         })
+
+        console.log(result)
 
         return toUserResponse(result)
     }
