@@ -18,7 +18,9 @@ apiRouter.get("/api/categories", CategoryController.search)
 apiRouter.get("/api/categories/:categoryId", CategoryController.getById)
 
 // Product API
+apiRouter.get("/api/products/:productId", ProductController.getById)
 apiRouter.get("/api/products", ProductController.search)
+apiRouter.get("/api/products/category/:categoryId", ProductController.getByCategoryId)
 
 // Transaction API
 apiRouter.get("/api/transactions", TransactionController.getCurrentUserTransaction)

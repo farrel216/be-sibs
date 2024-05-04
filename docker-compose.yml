@@ -5,8 +5,9 @@ services:
       dockerfile: Dockerfile
       target: base
     volumes:
-      - ./src:/home/node/app/src
-      - ./nodemon.json:/home/node/app/nodemon.json
+      - ./src:/app/backend/src
+      - /app/backend/node_modules
+      - ./nodemon.json:/app/backend/nodemon.json
     container_name: be-sibs
     environment:
       DATABASE_URL: 'postgresql://postgres:postgres@host.docker.internal:5432/sibs?schema=public'

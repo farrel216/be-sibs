@@ -49,10 +49,58 @@ export class UserController {
         }
     }
 
+    static async getById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.params.userId;
+            const response = await UserService.getById(userId);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Get user successfully",
+                data: response
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
+    static async getAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await UserService.getAll();
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Retrieve all user data successfully",
+                data: response
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
     static async update(req: UserRequest, res: Response, next: NextFunction) {
         try {
             const request: UpdateUserRequest = req.body as UpdateUserRequest;
             const response = await UserService.update(req.user!, request);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Update user data successfully",
+                data: response
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
+    static async updateById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const request: UpdateUserRequest = req.body as UpdateUserRequest;
+            const userId = req.params.userId;
+            const response = await UserService.updateById(userId, request);
             res.status(200).json({
                 statusCode: 200,
                 success: true,

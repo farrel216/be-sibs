@@ -18,6 +18,39 @@ export class ProductController {
             next(error);
         }
     }
+
+    static async getById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const productId = req.params.productId;
+            const response = await ProductService.getById(productId);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Get product successfully",
+                data: response
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
+    static async getByCategoryId(req: Request, res: Response, next: NextFunction) {
+        try {
+            const categoryId = req.params.categoryId;
+            const response = await ProductService.getByCategoryId(categoryId);
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Get product by category successfully",
+                data: response
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
     static async search(req: Request, res: Response, next: NextFunction) {
         try {
             const request: SearchProductRequest = {

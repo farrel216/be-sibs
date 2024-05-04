@@ -38,6 +38,35 @@ export class ProductService {
         return toProductResponse(product);
     }
 
+    static async getById(productId: string): Promise<ProductResponse> {
+        const product = await prismaClient.product.findFirst({
+            where: {
+                productId
+            },
+            include: {
+                category: true
+            }
+        });
+        if (!product) {
+            throw new ResponseError(400, "Product not found");
+        }
+        return toProductResponse(product);
+    }
+
+    static async getByCategoryId(categoryId: string): Promise<ProductResponse[]> {
+        await CategoryService.checkCategoryExist(categoryId);
+        const products = await prismaClient.product.findMany({
+            where: {
+                categoryId
+            },
+            include: {
+                category: true
+            }
+        })
+
+        return products.map(product => toProductResponse(product));
+    }
+
     static async search(request: SearchProductRequest): Promise<Pageable<ProductResponse>> {
         const searchRequest = Validation.validate(ProductValidation.SEARCH, request);
         const products = await prismaClient.product.findMany({

@@ -64,12 +64,48 @@ export class UserService {
 
         const response = toUserResponse(user)
         response.token = token;
-
+        console.log(response)
         return response
     }
 
     static async get(user: AccountModel): Promise<AccountResponse> {
         return toAccountResponse(user)
+    }
+
+    static async getById(userId: string): Promise<UserResponse> {
+        const user = await prismaClient.user.findUnique({
+            where: {
+                userId
+            }
+        })
+
+        if (!user) {
+            throw new ResponseError(404, "User not found")
+        }
+
+        return toUserResponse(user)
+    }
+
+    static async getAll() {
+        const users = await prismaClient.user.findMany({
+            include: {
+                balance: true
+            }
+        })
+
+        if (!users) {
+            throw new ResponseError(400, "No users found")
+        }
+
+        return users.map(user => {
+            return {
+                userId: user.userId,
+                username: user.username,
+                balance: user.balance?.balance,
+                name: user.name,
+                role: user.role
+            }
+        })
     }
 
     static async update(user: User, request: UpdateUserRequest): Promise<UserResponse> {
@@ -84,6 +120,39 @@ export class UserService {
         const result = await prismaClient.user.update({
             where: {
                 userId: user.userId
+            },
+            data: {
+                name: user.name,
+                password: user.password
+            }
+        })
+
+        return toUserResponse(result)
+    }
+
+    static async updateById(userId: string, request: UpdateUserRequest): Promise<UserResponse> {
+        const updateRequest = Validation.validate(UserValidation.UPDATE, request);
+
+        let user = await prismaClient.user.findUnique({
+            where: {
+                userId
+            }
+        })
+
+        if (!user) {
+            throw new ResponseError(404, "User not found")
+        }
+
+        if (updateRequest.name) {
+            user.name = updateRequest.name;
+        }
+        if (updateRequest.password) {
+            user.password = await bcrypt.hash(updateRequest.password, 10);
+        }
+
+        const result = await prismaClient.user.update({
+            where: {
+                userId
             },
             data: {
                 name: user.name,
